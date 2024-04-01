@@ -49,6 +49,12 @@
     <Compile Include="MapControl.Designer.cs">
       <DependentUpon>MapControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="MapEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MapEditor.Designer.cs">
+      <DependentUpon>MapEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="MapEvent.cs" />
     <Compile Include="TestForm.cs">
       <SubType>Form</SubType>
@@ -64,6 +70,9 @@
     </Compile>
     <EmbeddedResource Include="MapControl.resx">
       <DependentUpon>MapControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MapEditor.resx">
+      <DependentUpon>MapEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TestForm.resx">
       <DependentUpon>TestForm.cs</DependentUpon>

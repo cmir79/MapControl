@@ -11,31 +11,13 @@ namespace Map
         {
             InitializeComponent();
 
-            SetDirectionComboBox();
             ReadMapPara();
 
             Initialized = true;
         }
 
-        private void SetDirectionComboBox()
-        {
-            for (int i = 0; i < 16; i++)
-            {
-                comboBox1.Items.Add(((eMapDirection)i).ToString());
-            }
-
-            comboBox1.SelectedItem = mapControl1.FillDirection.ToString();
-        }
-
         private void ReadMapPara()
         {
-            numItemX.Value = mapControl1.ItemCount_Col;
-            numItemY.Value = mapControl1.ItemCount_Row;
-            numSegX.Value = mapControl1.SegmentCount_Col;
-            numSegY.Value = mapControl1.SegmentCount_Row;
-            numFillX.Value = mapControl1.FillCount_Col;
-            numFillY.Value = mapControl1.FillCount_Row;
-
             numTriSegRow.Value = mapControl1.TriggerCountPerSegRow;
             numTriSegCol.Value = mapControl1.TriggerCountPerSegCol;
             numTotalTriRow.Value = mapControl1.TotalTriggerCountRow;
@@ -61,13 +43,6 @@ namespace Map
             ReadMapPara();
         }
 
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (!Initialized) return;
-
-            mapControl1.FillDirection = (eMapDirection)comboBox1.SelectedIndex;
-        }
-
         private void btnReset_Click(object sender, EventArgs e)
         {
             mapControl1.SetStatusReadyAll();
@@ -81,7 +56,7 @@ namespace Map
         {
             if (mapControl1.TotalTriggerCountCol * mapControl1.TotalTriggerCountRow > numTriNum.Value)
             {
-                mapControl1.SetStatus((int)numTriNum.Value, true, (int)numOrder.Value++, eMapStatus.Good);
+                mapControl1.SetStatus((int)numTriNum.Value, true, eMapStatus.Good, (int)numOrder.Value++);
 
                 if (numOrder.Value == mapControl1.FillCount_Col * mapControl1.FillCount_Row)
                 {
@@ -95,7 +70,7 @@ namespace Map
         {
             if (mapControl1.TotalTriggerCountCol * mapControl1.TotalTriggerCountRow > numTriNum.Value)
             {
-                eMapStatus[] statuses = new eMapStatus[(int)numFillX.Value * (int)numFillY.Value];
+                eMapStatus[] statuses = new eMapStatus[mapControl1.FillCount_Col * mapControl1.FillCount_Row];
 
                 for (int i = 0; i < statuses.Length; i++)
                 {
@@ -109,6 +84,38 @@ namespace Map
                 numCurrentCol.Value = iX;
                 numCurrentRow.Value = iY;
             }
+        }
+
+        private void btnMapSettings_Click(object sender, EventArgs e)
+        {
+            using (Form frmMap = new Form())
+            {
+                MapEditor editor = new MapEditor(mapControl1);
+
+                frmMap.Controls.Add(editor);
+                editor.Dock = DockStyle.Fill;
+
+                editor.VisibleSetSegment = false;
+                editor.UseFunc1Button = true;
+
+                editor.OnFunc1Click += Editor_OnFunc1Click;
+                editor.btnFunc1.Text = "Auto Map";
+
+                frmMap.MinimumSize = new System.Drawing.Size(850, 500);
+                frmMap.ShowDialog();
+
+                if (MessageBox.Show("Get Map Control?", string.Empty, MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    mapControl1.AssignFrom(editor.GetMapControl, true);
+                    ReadMapPara();
+                }
+
+                editor.OnFunc1Click -= Editor_OnFunc1Click;
+            }
+        }
+
+        private void Editor_OnFunc1Click(object sender, EventArgs e)
+        {
         }
     }
 }

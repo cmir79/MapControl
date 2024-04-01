@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Map
 {
@@ -114,6 +115,8 @@ namespace Map
 
         public MapControl()
         {
+            InitializeComponent();
+
             m_Clr_Result[0] = Color.White;
             m_Clr_Result[1] = Color.DarkGray;
             m_Clr_Result[2] = Color.Transparent;
@@ -153,7 +156,7 @@ namespace Map
             AssignFrom(Source);
         }
 
-        public void AssignTo(MapControl Dest)
+        public void AssignTo(MapControl Dest, bool bOnlyStatus = false)
         {
             using (MemoryStream ms = new MemoryStream())
             {
@@ -161,9 +164,9 @@ namespace Map
                 {
                     using (BinaryWriter bw = new BinaryWriter(ms))
                     {
-                        SaveStream(ms, bw);
+                        SaveStream(ms, bw, bOnlyStatus);
                         ms.Seek(0, SeekOrigin.Begin);
-                        Dest.LoadStream(ms, br);
+                        Dest.LoadStream(ms, br, bOnlyStatus);
                         bw.Close();
                     }
                     br.Close();
@@ -172,15 +175,56 @@ namespace Map
             }
         }
 
-        public void AssignFrom(MapControl Source)
+        public void AssignFrom(MapControl Source, bool bOnlyStatus = false)
         {
-            Source.AssignTo(this);
+            Source.AssignTo(this, bOnlyStatus);
         }
 
-        public void SaveStream(Stream stream, BinaryWriter bw)
+        public void SaveStream(Stream stream, BinaryWriter bw, bool bOnlyStatus = false)
         {
             try
             {
+                if (!bOnlyStatus)
+                {
+                    bw.Write((int)m_HeadLoc_Col);
+                    bw.Write((int)m_HeadLoc_Row);
+
+                    bw.Write((int)m_HeadTextType_Col);
+                    bw.Write((int)m_HeadTextType_Row);
+
+                    bw.Write(m_HeadNumStartOne_Col);
+                    bw.Write(m_HeadNumStartOne_Row);
+
+                    bw.Write(m_VisiableLabel);
+                    bw.Write(m_VisiableTriNum);
+                    bw.Write(m_VisiableIndex);
+
+                    bw.Write(m_Clr_Border.ToArgb());
+                    bw.Write(m_Clr_ItemBorder.ToArgb());
+                    bw.Write(m_Clr_Header.ToArgb());
+
+                    for (int i = 0; i < m_Clr_Result.Length; i++)
+                        bw.Write(m_Clr_Result[i].ToArgb());
+
+                    bw.Write(m_Clr_Selected.ToArgb());
+                    bw.Write(m_Clr_Active.ToArgb());
+
+                    bw.Write(m_DistanceItem);
+                    bw.Write(m_DistanceSeg);
+                    bw.Write(m_BorderSize);
+
+                    bw.Write(m_Padding.Left);
+                    bw.Write(m_Padding.Top);
+                    bw.Write(m_Padding.Right);
+                    bw.Write(m_Padding.Bottom);
+
+                    bw.Write(m_LineWidth);
+                    bw.Write(m_RoundRectFact);
+
+                    bw.Write(m_ActiveEnable);
+                    bw.Write(m_SelectedEnable);
+                }
+
                 bw.Write(m_Item_Col);
                 bw.Write(m_Item_Row);
                 bw.Write(m_Seg_Col);
@@ -188,42 +232,7 @@ namespace Map
                 bw.Write(m_Fil_Col);
                 bw.Write(m_Fil_Row);
 
-                bw.Write((int)m_HeadLoc_Col);
-                bw.Write((int)m_HeadLoc_Row);
-
-                bw.Write((int)m_HeadTextType_Col);
-                bw.Write((int)m_HeadTextType_Row);
-
-                bw.Write(m_HeadNumStartOne_Col);
-                bw.Write(m_HeadNumStartOne_Row);
-
-                bw.Write(m_VisiableLabel);
-                bw.Write(m_VisiableTriNum);
-                bw.Write(m_VisiableIndex);
-
                 bw.Write((int)m_FillDirection);
-
-                bw.Write(m_Clr_Border.ToArgb());
-                bw.Write(m_Clr_ItemBorder.ToArgb());
-                bw.Write(m_Clr_Header.ToArgb());
-
-                for (int i = 0; i < m_Clr_Result.Length; i++)
-                    bw.Write(m_Clr_Result[i].ToArgb());
-
-                bw.Write(m_Clr_Selected.ToArgb());
-                bw.Write(m_Clr_Active.ToArgb());
-
-                bw.Write(m_DistanceItem);
-                bw.Write(m_DistanceSeg);
-                bw.Write(m_BorderSize);
-
-                bw.Write(m_Padding.Left);
-                bw.Write(m_Padding.Top);
-                bw.Write(m_Padding.Right);
-                bw.Write(m_Padding.Bottom);
-
-                bw.Write(m_LineWidth);
-                bw.Write(m_RoundRectFact);
 
                 for (int col = 0; col < m_Item_Col; col++)
                     for (int row = 0; row < m_Item_Row; row++)
@@ -240,10 +249,51 @@ namespace Map
             catch { }
         }
 
-        public void LoadStream(Stream stream, BinaryReader br)
+        public void LoadStream(Stream stream, BinaryReader br, bool bOnlyStatus = false)
         {
             try
             {
+                if (!bOnlyStatus)
+                {
+                    m_HeadLoc_Col = (eMapColHeadLocation)br.ReadInt32();
+                    m_HeadLoc_Row = (eMapRowHeadLocation)br.ReadInt32();
+
+                    m_HeadTextType_Col = (eMapLabelType)br.ReadInt32();
+                    m_HeadTextType_Row = (eMapLabelType)br.ReadInt32();
+
+                    m_HeadNumStartOne_Col = br.ReadBoolean();
+                    m_HeadNumStartOne_Row = br.ReadBoolean();
+
+                    m_VisiableLabel = br.ReadBoolean();
+                    m_VisiableTriNum = br.ReadBoolean();
+                    m_VisiableIndex = br.ReadBoolean();
+
+                    m_Clr_Border = Color.FromArgb(br.ReadInt32());
+                    m_Clr_ItemBorder = Color.FromArgb(br.ReadInt32());
+                    m_Clr_Header = Color.FromArgb(br.ReadInt32());
+
+                    for (int i = 0; i < m_Clr_Result.Length; i++)
+                        m_Clr_Result[i] = Color.FromArgb(br.ReadInt32());
+
+                    m_Clr_Selected = Color.FromArgb(br.ReadInt32());
+                    m_Clr_Active = Color.FromArgb(br.ReadInt32());
+
+                    m_DistanceItem = br.ReadInt32();
+                    m_DistanceSeg = br.ReadInt32();
+                    m_BorderSize = br.ReadInt32();
+
+                    m_Padding.Left = br.ReadInt32();
+                    m_Padding.Top = br.ReadInt32();
+                    m_Padding.Right = br.ReadInt32();
+                    m_Padding.Bottom = br.ReadInt32();
+
+                    m_LineWidth = br.ReadInt32();
+                    m_RoundRectFact = br.ReadSingle();
+
+                    m_ActiveEnable = br.ReadBoolean();
+                    m_SelectedEnable = br.ReadBoolean();
+                }
+
                 m_Item_Col = br.ReadInt32();
                 m_Item_Row = br.ReadInt32();
                 m_Seg_Col = br.ReadInt32();
@@ -251,42 +301,7 @@ namespace Map
                 m_Fil_Col = br.ReadInt32();
                 m_Fil_Row = br.ReadInt32();
 
-                m_HeadLoc_Col = (eMapColHeadLocation)br.ReadInt32();
-                m_HeadLoc_Row = (eMapRowHeadLocation)br.ReadInt32();
-
-                m_HeadTextType_Col = (eMapLabelType)br.ReadInt32();
-                m_HeadTextType_Row = (eMapLabelType)br.ReadInt32();
-
-                m_HeadNumStartOne_Col = br.ReadBoolean();
-                m_HeadNumStartOne_Row = br.ReadBoolean();
-
-                m_VisiableLabel = br.ReadBoolean();
-                m_VisiableTriNum = br.ReadBoolean();
-                m_VisiableIndex = br.ReadBoolean();
-
                 m_FillDirection = (eMapDirection)br.ReadInt32();
-
-                m_Clr_Border = Color.FromArgb(br.ReadInt32());
-                m_Clr_ItemBorder = Color.FromArgb(br.ReadInt32());
-                m_Clr_Header = Color.FromArgb(br.ReadInt32());
-
-                for (int i = 0; i < m_Clr_Result.Length; i++)
-                    m_Clr_Result[i] = Color.FromArgb(br.ReadInt32());
-
-                m_Clr_Selected = Color.FromArgb(br.ReadInt32());
-                m_Clr_Active = Color.FromArgb(br.ReadInt32());
-
-                m_DistanceItem = br.ReadInt32();
-                m_DistanceSeg = br.ReadInt32();
-                m_BorderSize = br.ReadInt32();
-
-                m_Padding.Left = br.ReadInt32();
-                m_Padding.Top = br.ReadInt32();
-                m_Padding.Right = br.ReadInt32();
-                m_Padding.Bottom = br.ReadInt32();
-
-                m_LineWidth = br.ReadInt32();
-                m_RoundRectFact = br.ReadSingle();
 
                 ReStruct();
 
@@ -308,26 +323,26 @@ namespace Map
             catch { }
         }
 
-        public void SaveToFile(string filename)
+        public void SaveToFile(string filename, bool bOnlyStatus = false)
         {
             using (FileStream fs = new FileStream(filename, FileMode.Create))
             {
                 using (BinaryWriter bw = new BinaryWriter(fs))
                 {
-                    SaveStream(fs, bw);
+                    SaveStream(fs, bw, bOnlyStatus);
                     bw.Close();
                 }
                 fs.Close();
             }
         }
 
-        public void LoadFromFile(string filename)
+        public void LoadFromFile(string filename, bool bOnlyStatus = false)
         {
             using (FileStream fs = new FileStream(filename, FileMode.Open))
             {
                 using (BinaryReader br = new BinaryReader(fs))
                 {
-                    LoadStream(fs, br);
+                    LoadStream(fs, br, bOnlyStatus);
                     br.Close();
                 }
                 fs.Close();
@@ -825,7 +840,10 @@ namespace Map
 
                 if (m_Selected_Col > -1 || m_Selected_Row > -1)
                 {
-                    _OnSelected?.Invoke(this, new MapEventArgs(m_Selected_Col, m_Selected_Row, m_ItemTriNums[m_Selected_Col, m_Selected_Row], m_ItemIndexs[m_Selected_Col, m_Selected_Row], m_Statuses[m_Selected_Col, m_Selected_Row]));
+                    _OnSelected?.Invoke(this, new MapEventArgs(m_Selected_Col, m_Selected_Row,
+                        m_ItemTriNums[m_Selected_Col, m_Selected_Row],
+                        m_ItemIndexs[m_Selected_Col, m_Selected_Row],
+                        m_Statuses[m_Selected_Col, m_Selected_Row]));
 
                     Invalidate();
                 }
@@ -850,9 +868,12 @@ namespace Map
                         }
                     }
 
-                if (m_Selected_Col > -1 || m_Selected_Row > -1)
+                if (m_Active_Col > -1 || m_Active_Row > -1)
                 {
-                    _OnActive?.Invoke(this, new MapEventArgs(m_Active_Col, m_Active_Row, m_ItemTriNums[m_Active_Col, m_Active_Row], m_ItemIndexs[m_Active_Col, m_Active_Row], m_Statuses[m_Active_Col, m_Active_Row]));
+                    _OnActive?.Invoke(this, new MapEventArgs(m_Active_Col, m_Active_Row,
+                        m_ItemTriNums[m_Active_Col, m_Active_Row],
+                        m_ItemIndexs[m_Active_Col, m_Active_Row],
+                        m_Statuses[m_Active_Col, m_Active_Row]));
 
                     Invalidate();
                 }
@@ -969,7 +990,7 @@ namespace Map
             {
                 if (m_Fil_Col != value)
                 {
-                    if (m_Seg_Col < value) m_Fil_Row = m_Seg_Col;
+                    if (m_Seg_Col < value) m_Fil_Col = m_Seg_Col;
                     else m_Fil_Col = value;
 
                     ReStruct();
@@ -1079,7 +1100,7 @@ namespace Map
             }
         }
 
-        public bool VisiableTriNum
+        public bool VisibleTriNum
         {
             get { return m_VisiableTriNum; }
             set
@@ -1092,7 +1113,7 @@ namespace Map
             }
         }
 
-        public bool VisiableIndex
+        public bool VisibleIndex
         {
             get { return m_VisiableIndex; }
             set
@@ -1445,6 +1466,18 @@ namespace Map
         public int TotalTriggerCountRow
         { get { return m_TotalTriCntRow; } }
 
+        public bool MouseActiveEnable
+        {
+            get { return m_ActiveEnable; }
+            set { m_ActiveEnable = value; }
+        }
+
+        public bool MouseSelectEnable
+        {
+            get { return m_SelectedEnable; }
+            set { m_SelectedEnable = value; }
+        }
+
         #endregion Properties
 
         #region Event Handler
@@ -1483,11 +1516,12 @@ namespace Map
         /// <summary>
         /// Not Use를 제외한 모든 결과를 Ready로 돌린다
         /// </summary>
-        public void SetStatusReadyAll()
+        /// <param name="includeNotUse">NotUse 포함 전부 Ready, default = false</param>
+        public void SetStatusReadyAll(bool includeNotUse = false)
         {
             for (int col = 0; col < m_Statuses.GetLength(0); col++)
                 for (int row = 0; row < m_Statuses.GetLength(1); row++)
-                    if (m_Statuses[col, row] != eMapStatus.NotUse)
+                    if (m_Statuses[col, row] != eMapStatus.NotUse || includeNotUse)
                         m_Statuses[col, row] = eMapStatus.Ready;
 
             Invalidate();
@@ -1506,7 +1540,7 @@ namespace Map
             if (status.Length != m_Fil_Col * m_Fil_Row) return;
 
             for (int i = 0; i < status.Length; i++)
-                SetStatus(triNum, iX, iY, i, status[i]);
+                SetStatus(triNum, iX, iY, status[i], i);
         }
 
         /// <summary>
@@ -1524,7 +1558,7 @@ namespace Map
             if (status.Length != m_Fil_Col * m_Fil_Row) return;
 
             for (int i = 0; i < status.Length; i++)
-                SetStatus(triNum, iX, iY, i, status[i]);
+                SetStatus(triNum, iX, iY, status[i], i);
         }
 
         /// <summary>
@@ -1532,9 +1566,9 @@ namespace Map
         /// </summary>
         /// <param name="iX">처음 X인덱스</param>
         /// <param name="iY">처음 Y인덱스</param>
-        /// <param name="fillIdx">순서는 Direction과 동일하여야 함</param>
         /// <param name="status">결과</param>
-        public void SetStatus(int triNum, int iX, int iY, int fillIdx, eMapStatus status)
+        /// <param name="fillIdx">순서는 Direction과 동일하여야 함</param>
+        public void SetStatus(int triNum, int iX, int iY, eMapStatus status, int fillIdx = 0)
         {
             if (iX < 0 || iY < 0) return;
 
@@ -1615,13 +1649,13 @@ namespace Map
         /// </summary>
         /// <param name="triNum">트리거 번호 0 ~</param>
         /// <param name="skipNotUse">트리거넘버에 해당하는 위치가 전부 Not Use면 자동으로 다음 TriNum에 결과 삽입</param>
-        /// <param name="fillIdx">순서는 Direction과 동일하여야 함</param>
         /// <param name="status">결과</param>
-        public void SetStatus(int triNum, bool skipNotUse, int fillIdx, eMapStatus status)
+        /// <param name="fillIdx">순서는 Direction과 동일하여야 함</param>
+        public void SetStatus(int triNum, bool skipNotUse, eMapStatus status, int fillIdx = 0)
         {
             GetIndex(skipNotUse ? GetVirTriNum(triNum) : triNum, out int iX, out int iY);
 
-            SetStatus(triNum, iX, iY, fillIdx, status);
+            SetStatus(triNum, iX, iY, status, fillIdx);
         }
 
         /// <summary>
@@ -1629,15 +1663,79 @@ namespace Map
         /// </summary>
         /// <param name="triNum">트리거 번호 0 ~</param>
         /// <param name="skipNotUse">트리거넘버에 해당하는 위치가 전부 Not Use면 자동으로 다음 TriNum에 결과 삽입</param>
-        /// <param name="fillIdx">순서는 Direction과 동일하여야 함</param>
         /// <param name="status">결과</param>
         /// <param name="iX">입력 트리거에서 결과 입력하는 처음 X인덱스</param>
         /// <param name="iY">입력 트리거에서 결과 입력하는 처음 Y인덱스</param>
-        public void SetStatus(int triNum, bool skipNotUse, int fillIdx, out int iX, out int iY, eMapStatus status)
+        /// <param name="fillIdx">순서는 Direction과 동일하여야 함</param>
+        public void SetStatus(int triNum, bool skipNotUse, out int iX, out int iY, eMapStatus status, int fillIdx = 0)
         {
             GetIndex(skipNotUse ? GetVirTriNum(triNum) : triNum, out iX, out iY);
 
-            SetStatus(triNum, iX, iY, fillIdx, status);
+            SetStatus(triNum, iX, iY, status, fillIdx);
+        }
+
+        public eMapStatus GetStatus(int iX, int iY, int fillIdx)
+        {
+            int tmpCnt = 0;
+
+            if (((int)m_FillDirection & 0b0100) == 0b0100)
+            {
+                for (int col = 0; col < m_Fil_Col; col++)
+                {
+                    if (((int)m_FillDirection & 0b1000) == 0b1000 && col % 2 != 0)
+                        for (int row = m_Fil_Row - 1; row >= 0; row--)
+                        {
+                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                                return m_Statuses[iX + col, iY + row];
+
+                            tmpCnt++;
+                        }
+                    else
+                        for (int row = 0; row < m_Fil_Row; row++)
+                        {
+                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                                return m_Statuses[iX + col, iY + row];
+
+                            tmpCnt++;
+                        }
+                }
+            }
+            else
+            {
+                for (int row = 0; row < m_Fil_Row; row++)
+                {
+                    if (((int)m_FillDirection & 0b1000) == 0b1000 && row % 2 != 0)
+                        for (int col = m_Fil_Col - 1; col >= 0; col--)
+                        {
+                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                                return m_Statuses[iX + col, iY + row];
+
+                            tmpCnt++;
+                        }
+                    else
+                        for (int col = 0; col < m_Fil_Col; col++)
+                        {
+                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                                return m_Statuses[iX + col, iY + row];
+
+                            tmpCnt++;
+                        }
+                }
+            }
+
+            return eMapStatus.NotUse;
+        }
+
+        public eMapStatus GetStatus(int iX, int iY)
+        {
+            if (iX >= m_Item_Col || iY >= m_Item_Row) return eMapStatus.NotUse;
+            else return m_Statuses[iX, iY];
+        }
+
+        public void SetStatus(int iX, int iY, eMapStatus status)
+        {
+            if (iX >= m_Item_Col || iY >= m_Item_Row) return;
+            else m_Statuses[iX, iY] = status;
         }
 
         /// <summary>
