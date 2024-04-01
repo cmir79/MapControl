@@ -56,6 +56,7 @@
             this.numTriNum = new System.Windows.Forms.NumericUpDown();
             this.numCurrentRow = new System.Windows.Forms.NumericUpDown();
             this.numCurrentCol = new System.Windows.Forms.NumericUpDown();
+            this.numOrder = new System.Windows.Forms.NumericUpDown();
             this.mapControl1 = new Map.MapControl();
             ((System.ComponentModel.ISupportInitialize)(this.numItemX)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numItemY)).BeginInit();
@@ -70,6 +71,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numTriNum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numCurrentRow)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numCurrentCol)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numOrder)).BeginInit();
             this.SuspendLayout();
             // 
             // numItemX
@@ -426,7 +428,7 @@
             // 
             this.numTriNum.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.numTriNum.Enabled = false;
-            this.numTriNum.Location = new System.Drawing.Point(642, 308);
+            this.numTriNum.Location = new System.Drawing.Point(642, 311);
             this.numTriNum.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -441,7 +443,7 @@
             // 
             this.numCurrentRow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.numCurrentRow.Enabled = false;
-            this.numCurrentRow.Location = new System.Drawing.Point(666, 366);
+            this.numCurrentRow.Location = new System.Drawing.Point(666, 369);
             this.numCurrentRow.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -456,7 +458,7 @@
             // 
             this.numCurrentCol.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.numCurrentCol.Enabled = false;
-            this.numCurrentCol.Location = new System.Drawing.Point(614, 366);
+            this.numCurrentCol.Location = new System.Drawing.Point(614, 369);
             this.numCurrentCol.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -467,19 +469,35 @@
             this.numCurrentCol.TabIndex = 1;
             this.numCurrentCol.Tag = "";
             // 
+            // numOrder
+            // 
+            this.numOrder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.numOrder.Enabled = false;
+            this.numOrder.Location = new System.Drawing.Point(642, 340);
+            this.numOrder.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+            this.numOrder.Name = "numOrder";
+            this.numOrder.Size = new System.Drawing.Size(70, 21);
+            this.numOrder.TabIndex = 1;
+            this.numOrder.Tag = "";
+            // 
             // mapControl1
             // 
             this.mapControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.mapControl1.BackColor = System.Drawing.Color.Black;
             this.mapControl1.BorderSize = 1;
             this.mapControl1.CellLineWidth = 1;
             this.mapControl1.Color_Active = System.Drawing.Color.Blue;
             this.mapControl1.Color_Border = System.Drawing.Color.Black;
             this.mapControl1.Color_Good = System.Drawing.Color.Lime;
-            this.mapControl1.Color_Header = System.Drawing.Color.LightGray;
+            this.mapControl1.Color_Header = System.Drawing.Color.Silver;
             this.mapControl1.Color_ItemBorder = System.Drawing.Color.Black;
-            this.mapControl1.Color_NotUse = System.Drawing.Color.Transparent;
+            this.mapControl1.Color_NotUse = System.Drawing.Color.Black;
             this.mapControl1.Color_Ready = System.Drawing.Color.White;
             this.mapControl1.Color_Res01 = System.Drawing.Color.Red;
             this.mapControl1.Color_Res02 = System.Drawing.Color.Black;
@@ -499,7 +517,7 @@
             this.mapControl1.Color_Res16 = System.Drawing.Color.Red;
             this.mapControl1.Color_Selected = System.Drawing.Color.Red;
             this.mapControl1.Color_XMark = System.Drawing.Color.DarkGray;
-            this.mapControl1.ColumnHeadLocation = Map.eMapColHeadLocation.Top;
+            this.mapControl1.ColumnHeadLocation = Map.eMapColHeadLocation.None;
             this.mapControl1.ColumnNumberStartOne = false;
             this.mapControl1.CulumnTextType = Map.eMapLabelType.Number;
             this.mapControl1.DistanceItem = 2;
@@ -508,19 +526,20 @@
             this.mapControl1.FillCount_Col = 2;
             this.mapControl1.FillCount_Row = 2;
             this.mapControl1.FillDirection = Map.eMapDirection.LTtoRT_S;
+            this.mapControl1.ForeColor = System.Drawing.Color.Black;
             this.mapControl1.ItemCount_Col = 10;
             this.mapControl1.ItemCount_Row = 5;
             this.mapControl1.Location = new System.Drawing.Point(0, 0);
             this.mapControl1.Name = "mapControl1";
             this.mapControl1.RoundRectFact = 0.5F;
-            this.mapControl1.RowHeadLocation = Map.eMapRowHeadLocation.Left;
+            this.mapControl1.RowHeadLocation = Map.eMapRowHeadLocation.None;
             this.mapControl1.RowTextType = Map.eMapLabelType.Number;
             this.mapControl1.SegmentCount_Col = 3;
             this.mapControl1.SegmentCount_Row = 3;
             this.mapControl1.Size = new System.Drawing.Size(587, 450);
             this.mapControl1.TabIndex = 3;
             this.mapControl1.VisiableIndex = true;
-            this.mapControl1.VisiableTriNum = false;
+            this.mapControl1.VisiableTriNum = true;
             this.mapControl1.VisibleLabel = true;
             // 
             // TestForm
@@ -544,6 +563,7 @@
             this.Controls.Add(this.label3);
             this.Controls.Add(this.numCurrentCol);
             this.Controls.Add(this.numCurrentRow);
+            this.Controls.Add(this.numOrder);
             this.Controls.Add(this.numTriNum);
             this.Controls.Add(this.numTotalTriRow);
             this.Controls.Add(this.label2);
@@ -573,6 +593,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numTriNum)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numCurrentRow)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numCurrentCol)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numOrder)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -608,6 +629,7 @@
         private System.Windows.Forms.NumericUpDown numTriNum;
         private System.Windows.Forms.NumericUpDown numCurrentRow;
         private System.Windows.Forms.NumericUpDown numCurrentCol;
+        private System.Windows.Forms.NumericUpDown numOrder;
     }
 }
 

@@ -6,73 +6,6 @@ using System.Windows.Forms;
 
 namespace Map
 {
-    #region Event Args
-
-    public class MapEventArgs : EventArgs
-    {
-        public int SelectedCol;
-        public int SelectedRow;
-        public int SelectedTriNum;
-        public int SelectedIndex;
-        public eMapStatus Status;
-
-        public MapEventArgs(int col, int row, int trinum, int idx, eMapStatus value)
-        {
-            SelectedCol = col;
-            SelectedRow = row;
-            SelectedTriNum = trinum;
-            SelectedIndex = idx;
-            Status = value;
-        }
-    }
-
-    public delegate void MapEventHandler(object sender, MapEventArgs e);
-
-    #endregion Event Args
-
-    #region Map Enum
-
-    public enum eMapLabelType
-    { Number, Alphabet }
-
-    public enum eMapColHeadLocation
-    { None, Top, Bottom }
-
-    public enum eMapRowHeadLocation
-    { None, Left, Right }
-
-    /// <summary>
-    /// 0000
-    /// 1st 0 Straight or Zigzag / 0 : Straigth, 1 : Zigzag
-    /// 2nd 0 Dir / 0 : Hor, 1 : Ver
-    /// 3rd 0 Start Point1 / 0 : Left, 1 : Right
-    /// 4th 0 Start Point2 / 0 : Top, 1 : Bottom
-    /// </summary>
-    public enum eMapDirection
-    {
-        LTtoRT_S = 0b0000,
-        LTtoLB_S = 0b0100,
-        RTtoLT_S = 0b0010,
-        RTtoRB_S = 0b0110,
-        LBtoRB_S = 0b0001,
-        LBtoLT_S = 0b0101,
-        RBtoLB_S = 0b0011,
-        RBtoRT_S = 0b0111,
-        LTtoRT_Z = 0b1000,
-        LTtoLB_Z = 0b1100,
-        RTtoLT_Z = 0b1010,
-        RTtoRB_Z = 0b1110,
-        LBtoRB_Z = 0b1001,
-        LBtoLT_Z = 0b1101,
-        RBtoLB_Z = 0b1011,
-        RBtoRT_Z = 0b1111,
-    }
-
-    public enum eMapStatus
-    { Ready, XMark, NotUse, Good, Res01, Res02, Res03, Res04, Res05, Res06, Res07, Res08, Res09, Res10, Res11, Res12, Res13, Res14, Res15, Res16 };
-
-    #endregion Map Enum
-
     public partial class MapControl : UserControl
     {
         private const string AlphabetString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -121,7 +54,7 @@ namespace Map
 
         private RectangleF[,] m_ItemRects;
 
-        private eMapStatus[,] m_Status;
+        private eMapStatus[,] m_Statuses;
 
         private string[,] m_ItemLabels;
         private int[,] m_ItemTriNums;
@@ -157,8 +90,6 @@ namespace Map
 
         private int m_TotalTriCntCol = -1;
         private int m_TotalTriCntRow = -1;
-
-        private int m_TmpFillNum = 0;
 
         #endregion 연산용
 
@@ -296,7 +227,7 @@ namespace Map
 
                 for (int col = 0; col < m_Item_Col; col++)
                     for (int row = 0; row < m_Item_Row; row++)
-                        bw.Write((int)m_Status[col, row]);
+                        bw.Write((int)m_Statuses[col, row]);
 
                 for (int col = 0; col < m_Item_Col; col++)
                     for (int row = 0; row < m_Item_Row; row++)
@@ -361,7 +292,7 @@ namespace Map
 
                 for (int col = 0; col < m_Item_Col; col++)
                     for (int row = 0; row < m_Item_Row; row++)
-                        m_Status[col, row] = (eMapStatus)br.ReadInt32();
+                        m_Statuses[col, row] = (eMapStatus)br.ReadInt32();
 
                 for (int col = 0; col < m_Item_Col; col++)
                     for (int row = 0; row < m_Item_Row; row++)
@@ -426,8 +357,8 @@ namespace Map
                 if (m_ItemRects == null || m_ItemRects.GetLength(0) != m_Item_Col || m_ItemRects.GetLength(1) != m_Item_Row)
                     m_ItemRects = new RectangleF[m_Item_Col, m_Item_Row];
 
-                if (m_Status == null || m_Status.GetLength(0) != m_Item_Col || m_Status.GetLength(1) != m_Item_Row)
-                    m_Status = new eMapStatus[m_Item_Col, m_Item_Row];
+                if (m_Statuses == null || m_Statuses.GetLength(0) != m_Item_Col || m_Statuses.GetLength(1) != m_Item_Row)
+                    m_Statuses = new eMapStatus[m_Item_Col, m_Item_Row];
 
                 if (m_ItemLabels == null || m_ItemLabels.GetLength(0) != m_Item_Col || m_ItemLabels.GetLength(1) != m_Item_Row)
                     m_ItemLabels = new string[m_Item_Col, m_Item_Row];
@@ -741,6 +672,7 @@ namespace Map
 
         /// <summary>
         /// Invalidate() 사용 시 이벤트 연동
+        /// 외부에서 Draw 해도 이벤트 타면 다없어지고 다시 그리기 때문에 Draw함수는 따로 쓰지 않음
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -788,7 +720,7 @@ namespace Map
                 for (int row = 0; row < m_ItemRects.GetLength(1); row++)
                 {
                     GetRoundedRectPath(ref path, m_ItemRects[col, row], m_RoundRectFact);
-                    gra.FillPath(new SolidBrush(m_Clr_Result[(int)m_Status[col, row]]), path);
+                    gra.FillPath(new SolidBrush(m_Clr_Result[(int)m_Statuses[col, row]]), path);
                     gra.DrawPath(new Pen(m_Clr_ItemBorder, m_LineWidth), path);
 
                     if (m_VisiableLabel)
@@ -893,7 +825,7 @@ namespace Map
 
                 if (m_Selected_Col > -1 || m_Selected_Row > -1)
                 {
-                    _OnSelected?.Invoke(this, new MapEventArgs(m_Selected_Col, m_Selected_Row, m_ItemTriNums[m_Selected_Col, m_Selected_Row], m_ItemIndexs[m_Selected_Col, m_Selected_Row], m_Status[m_Selected_Col, m_Selected_Row]));
+                    _OnSelected?.Invoke(this, new MapEventArgs(m_Selected_Col, m_Selected_Row, m_ItemTriNums[m_Selected_Col, m_Selected_Row], m_ItemIndexs[m_Selected_Col, m_Selected_Row], m_Statuses[m_Selected_Col, m_Selected_Row]));
 
                     Invalidate();
                 }
@@ -920,7 +852,7 @@ namespace Map
 
                 if (m_Selected_Col > -1 || m_Selected_Row > -1)
                 {
-                    _OnActive?.Invoke(this, new MapEventArgs(m_Active_Col, m_Active_Row, m_ItemTriNums[m_Active_Col, m_Active_Row], m_ItemIndexs[m_Active_Col, m_Active_Row], m_Status[m_Active_Col, m_Active_Row]));
+                    _OnActive?.Invoke(this, new MapEventArgs(m_Active_Col, m_Active_Row, m_ItemTriNums[m_Active_Col, m_Active_Row], m_ItemIndexs[m_Active_Col, m_Active_Row], m_Statuses[m_Active_Col, m_Active_Row]));
 
                     Invalidate();
                 }
@@ -969,7 +901,7 @@ namespace Map
 
                     ReStruct();
                     ResizeRect();
-                    Invalidate();
+                    SetStatusReadyAll();
                 }
             }
         }
@@ -987,7 +919,7 @@ namespace Map
 
                     ReStruct();
                     ResizeRect();
-                    Invalidate();
+                    SetStatusReadyAll();
                 }
             }
         }
@@ -1006,7 +938,7 @@ namespace Map
 
                     ReStruct();
                     ResizeRect();
-                    Invalidate();
+                    SetStatusReadyAll();
                 }
             }
         }
@@ -1025,7 +957,7 @@ namespace Map
 
                     ReStruct();
                     ResizeRect();
-                    Invalidate();
+                    SetStatusReadyAll();
                 }
             }
         }
@@ -1042,7 +974,7 @@ namespace Map
 
                     ReStruct();
                     ResizeRect();
-                    Invalidate();
+                    SetStatusReadyAll();
                 }
             }
         }
@@ -1059,7 +991,7 @@ namespace Map
 
                     ReStruct();
                     ResizeRect();
-                    Invalidate();
+                    SetStatusReadyAll();
                 }
             }
         }
@@ -1182,7 +1114,7 @@ namespace Map
                 {
                     m_FillDirection = value;
                     ResizeRect();
-                    Invalidate();
+                    SetStatusReadyAll();
                 }
             }
         }
@@ -1553,10 +1485,10 @@ namespace Map
         /// </summary>
         public void SetStatusReadyAll()
         {
-            for (int col = 0; col < m_Status.GetLength(0); col++)
-                for (int row = 0; row < m_Status.GetLength(1); row++)
-                    if (m_Status[col, row] != eMapStatus.NotUse)
-                        m_Status[col, row] = eMapStatus.Ready;
+            for (int col = 0; col < m_Statuses.GetLength(0); col++)
+                for (int row = 0; row < m_Statuses.GetLength(1); row++)
+                    if (m_Statuses[col, row] != eMapStatus.NotUse)
+                        m_Statuses[col, row] = eMapStatus.Ready;
 
             Invalidate();
         }
@@ -1564,57 +1496,200 @@ namespace Map
         /// <summary>
         /// 트리거 번호에 맞는 위치에 결과 삽입
         /// </summary>
-        /// <param name="triNum">트리거 넘버 0 ~</param>
-        /// <param name="skipNotUse">트리거넘버에 해당하는 위치가 전부 Not Use면 자동으로 다음 TriNum에 결과 삽입 default = true</param>
-        /// <param name="status">결과 순서는 Direction과 동일하여야 함</param>
+        /// <param name="triNum">트리거 번호 0 ~</param>
+        /// <param name="skipNotUse">트리거넘버에 해당하는 위치가 전부 Not Use면 자동으로 다음 TriNum에 결과 삽입</param>
+        /// <param name="status">1차원 결과 배열 / 결과 순서는 Direction과 동일하여야 함</param>
         public void SetStatuses(int triNum, bool skipNotUse, params eMapStatus[] status)
         {
-            if (status.Length == m_Fil_Col * m_Fil_Row) return;
+            GetIndex(skipNotUse ? GetVirTriNum(triNum) : triNum, out int iX, out int iY);
 
-            m_TmpFillNum = 0;
+            if (status.Length != m_Fil_Col * m_Fil_Row) return;
+
+            for (int i = 0; i < status.Length; i++)
+                SetStatus(triNum, iX, iY, i, status[i]);
         }
 
-        public void SetStatus(int triNum, bool skipNotUse, eMapStatus status)
+        /// <summary>
+        /// 트리거 번호에 맞는 위치에 결과 삽입
+        /// </summary>
+        /// <param name="triNum">트리거 번호 0 ~</param>
+        /// <param name="skipNotUse">트리거넘버에 해당하는 위치가 전부 Not Use면 자동으로 다음 TriNum에 결과 삽입</param>
+        /// <param name="iX">입력 트리거에서 결과 입력하는 처음 X인덱스</param>
+        /// <param name="iY">입력 트리거에서 결과 입력하는 처음 Y인덱스</param>
+        /// <param name="status">1차원 결과 배열 / 결과 순서는 Direction과 동일하여야 함</param>
+        public void SetStatuses(int triNum, bool skipNotUse, out int iX, out int iY, params eMapStatus[] status)
         {
-            int idxX = -1;
-            int idxY = -1;
+            GetIndex(skipNotUse ? GetVirTriNum(triNum) : triNum, out iX, out iY);
+
+            if (status.Length != m_Fil_Col * m_Fil_Row) return;
+
+            for (int i = 0; i < status.Length; i++)
+                SetStatus(triNum, iX, iY, i, status[i]);
+        }
+
+        /// <summary>
+        /// 인덱스에 결과 삽입
+        /// </summary>
+        /// <param name="iX">처음 X인덱스</param>
+        /// <param name="iY">처음 Y인덱스</param>
+        /// <param name="fillIdx">순서는 Direction과 동일하여야 함</param>
+        /// <param name="status">결과</param>
+        public void SetStatus(int triNum, int iX, int iY, int fillIdx, eMapStatus status)
+        {
+            if (iX < 0 || iY < 0) return;
+
+            int tmpCnt = 0;
 
             if (((int)m_FillDirection & 0b0100) == 0b0100)
             {
+                for (int col = 0; col < m_Fil_Col; col++)
+                {
+                    if (((int)m_FillDirection & 0b1000) == 0b1000 && col % 2 != 0)
+                        for (int row = m_Fil_Row - 1; row >= 0; row--)
+                        {
+                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            {
+                                m_Statuses[iX + col, iY + row] = status;
+                                m_ItemTriNums[iX + col, iY + row] = triNum;
+
+                                Invalidate();
+                                return;
+                            }
+
+                            tmpCnt++;
+                        }
+                    else
+                        for (int row = 0; row < m_Fil_Row; row++)
+                        {
+                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            {
+                                m_Statuses[iX + col, iY + row] = status;
+                                m_ItemTriNums[iX + col, iY + row] = triNum;
+
+                                Invalidate();
+                                return;
+                            }
+
+                            tmpCnt++;
+                        }
+                }
             }
             else
             {
-                //idxX = m_Item_Col / m_Fil_Col
+                for (int row = 0; row < m_Fil_Row; row++)
+                {
+                    if (((int)m_FillDirection & 0b1000) == 0b1000 && row % 2 != 0)
+                        for (int col = m_Fil_Col - 1; col >= 0; col--)
+                        {
+                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            {
+                                m_Statuses[iX + col, iY + row] = status;
+                                m_ItemTriNums[iX + col, iY + row] = triNum;
+
+                                Invalidate();
+                                return;
+                            }
+
+                            tmpCnt++;
+                        }
+                    else
+                        for (int col = 0; col < m_Fil_Col; col++)
+                        {
+                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            {
+                                m_Statuses[iX + col, iY + row] = status;
+                                m_ItemTriNums[iX + col, iY + row] = triNum;
+
+                                Invalidate();
+                                return;
+                            }
+
+                            tmpCnt++;
+                        }
+                }
             }
         }
 
         /// <summary>
-        /// Fill 영역에 들어오지 않아서 Not Use를 건너뛰었을 때 실제 트리거 넘버와 계산용 가상트리거를 연산해서 출력
+        /// 트리거 번호 및 트리거 내부 인덱스에 결과 삽입
+        /// </summary>
+        /// <param name="triNum">트리거 번호 0 ~</param>
+        /// <param name="skipNotUse">트리거넘버에 해당하는 위치가 전부 Not Use면 자동으로 다음 TriNum에 결과 삽입</param>
+        /// <param name="fillIdx">순서는 Direction과 동일하여야 함</param>
+        /// <param name="status">결과</param>
+        public void SetStatus(int triNum, bool skipNotUse, int fillIdx, eMapStatus status)
+        {
+            GetIndex(skipNotUse ? GetVirTriNum(triNum) : triNum, out int iX, out int iY);
+
+            SetStatus(triNum, iX, iY, fillIdx, status);
+        }
+
+        /// <summary>
+        /// 트리거 번호 및 트리거 내부 인덱스에 결과 삽입
+        /// </summary>
+        /// <param name="triNum">트리거 번호 0 ~</param>
+        /// <param name="skipNotUse">트리거넘버에 해당하는 위치가 전부 Not Use면 자동으로 다음 TriNum에 결과 삽입</param>
+        /// <param name="fillIdx">순서는 Direction과 동일하여야 함</param>
+        /// <param name="status">결과</param>
+        /// <param name="iX">입력 트리거에서 결과 입력하는 처음 X인덱스</param>
+        /// <param name="iY">입력 트리거에서 결과 입력하는 처음 Y인덱스</param>
+        public void SetStatus(int triNum, bool skipNotUse, int fillIdx, out int iX, out int iY, eMapStatus status)
+        {
+            GetIndex(skipNotUse ? GetVirTriNum(triNum) : triNum, out iX, out iY);
+
+            SetStatus(triNum, iX, iY, fillIdx, status);
+        }
+
+        /// <summary>
+        /// Fill 영역 Not Use 밖에 없어서 건너뛰었을 때 계산용 가상트리거 출력
         /// </summary>
         /// <param name="triNum">실제로 들어온 트리거 넘버</param>
         /// <returns></returns>
         public int GetVirTriNum(int triNum)
         {
             int ret = 0;
+            int nFind = 0;
 
-            while (ret != triNum)
+            while (true)
             {
-                for (int col = 0; col < m_Status.GetLength(0); col++)
+                GetIndex(ret, out int iX, out int iY);
+
+                for (int col = 0; col < m_Fil_Col; col++)
                 {
-                    for (int row = 0; row <= m_Status.GetLength(1); row++)
+                    bool bFindUsed = false;
+
+                    for (int row = 0; row < m_Fil_Row; row++)
                     {
-                        if (m_Status[col, row] != eMapStatus.NotUse)
+                        if (CheckWritableResult(iX, iY, col, row))
                         {
+                            nFind++;
+                            bFindUsed = true;
+                            break;
                         }
                     }
+
+                    if (bFindUsed) break;
                 }
+
+                if (nFind == triNum + 1) break;
+
+                ret++;
+
+                if (ret >= m_TotalTriCntCol * m_TotalTriCntRow) return m_TotalTriCntCol * m_TotalTriCntRow;
             }
+
             return ret;
         }
 
-        public void GetTriNumIndex(int triNum, out int col, out int row)
+        /// <summary>
+        /// 결과 입력 시작 인덱스
+        /// </summary>
+        /// <param name="triNum">트리거 번호 0 ~</param>
+        /// <param name="iX">입력 트리거에서 결과 입력하는 처음 X인덱스</param>
+        /// <param name="iY">입력 트리거에서 결과 입력하는 처음 Y인덱스</param>
+        public void GetIndex(int triNum, out int iX, out int iY)
         {
-            col = -1; row = -1;
+            iX = -1; iY = -1;
 
             if (triNum == m_TotalTriCntCol * m_TotalTriCntRow) return;
 
@@ -1624,8 +1699,8 @@ namespace Map
                 if (((int)m_FillDirection & 0b1000) == 0b1000 && triNum / m_TotalTriCntRow % 2 != 0)
                     tmpNum = m_TotalTriCntRow - triNum % m_TotalTriCntRow - 1;
 
-                col = triNum / m_TotalTriCntRow * m_Fil_Col - triNum / m_TotalTriCntRow / m_TriCntPerSegCol * (m_Fil_Col - m_Seg_Col % m_Fil_Col);
-                row = tmpNum % m_TotalTriCntRow * m_Fil_Row - tmpNum % m_TotalTriCntRow / m_TriCntPerSegRow * (m_Fil_Row - m_Seg_Row % m_Fil_Row);
+                iX = triNum / m_TotalTriCntRow * m_Fil_Col - (m_Seg_Col % m_Fil_Col != 0 ? triNum / m_TotalTriCntRow / m_TriCntPerSegCol * (m_Fil_Col - m_Seg_Col % m_Fil_Col) : 0);
+                iY = tmpNum % m_TotalTriCntRow * m_Fil_Row - (m_Seg_Row % m_Fil_Row != 0 ? tmpNum % m_TotalTriCntRow / m_TriCntPerSegRow * (m_Fil_Row - m_Seg_Row % m_Fil_Row) : 0);
             }
             else
             {
@@ -1633,9 +1708,51 @@ namespace Map
                 if (((int)m_FillDirection & 0b1000) == 0b1000 && triNum / m_TotalTriCntCol % 2 != 0)
                     tmpNum = m_TotalTriCntCol - triNum % m_TotalTriCntCol - 1;
 
-                col = tmpNum % m_TotalTriCntCol * m_Fil_Col - tmpNum % m_TotalTriCntCol / m_TriCntPerSegCol * (m_Fil_Col - m_Seg_Col % m_Fil_Col);
-                row = triNum / m_TotalTriCntCol * m_Fil_Row - triNum / m_TotalTriCntCol / m_TriCntPerSegRow * (m_Fil_Row - m_Seg_Row % m_Fil_Row);
+                iX = tmpNum % m_TotalTriCntCol * m_Fil_Col - (m_Seg_Col % m_Fil_Col != 0 ? tmpNum % m_TotalTriCntCol / m_TriCntPerSegCol * (m_Fil_Col - m_Seg_Col % m_Fil_Col) : 0);
+                iY = triNum / m_TotalTriCntCol * m_Fil_Row - (m_Seg_Row % m_Fil_Row != 0 ? triNum / m_TotalTriCntCol / m_TriCntPerSegRow * (m_Fil_Row - m_Seg_Row % m_Fil_Row) : 0);
             }
+        }
+
+        /// <summary>
+        /// Segment로 생기는 자투리 공간에 결과 입력하지 않도록 확인 true : 입력가능, false : 입력불가.
+        /// </summary>
+        /// <param name="triNum">트리거 넘버 0 ~</param>
+        /// <param name="fillIdxX">입력 트리거에서 확인 할 X인덱스</param>
+        /// <param name="fillIdxY">입력 트리거에서 확인 할 Y인덱스</param>
+        /// <returns></returns>
+        public bool CheckWritableResult(int triNum, int fillIdxX, int fillIdxY)
+        {
+            GetIndex(triNum, out int iX, out int iY);
+
+            return CheckWritableResult(iX, iY, fillIdxX, fillIdxY);
+        }
+
+        /// <summary>
+        /// Segment로 생기는 자투리 공간 및 NotUse에 결과 입력하지 않도록 확인 true : 입력가능, false : 입력불가.
+        /// </summary>
+        /// <param name="iX">입력 트리거 넘버로 나온 결과입력 하는 처음 X인덱스</param>
+        /// <param name="iY">입력 트리거 넘버로 나온 결과입력 하는 처음 Y인덱스</param>
+        /// <param name="fillIdxX">입력 트리거에서 확인 할 X인덱스</param>
+        /// <param name="fillIdxY">입력 트리거에서 확인 할 Y인덱스</param>
+        /// <returns></returns>
+        public bool CheckWritableResult(int iX, int iY, int fillIdxX, int fillIdxY)
+        {
+            if (iX < 0 || iY < 0) return false;
+            int tmpX = iX;
+            int tmpY = iY;
+
+            if (iX + fillIdxX >= m_Item_Col) return false;
+            if (iY + fillIdxY >= m_Item_Row) return false;
+
+            while (tmpX - m_Seg_Col >= 0) tmpX -= m_Seg_Col;
+            while (tmpY - m_Seg_Row >= 0) tmpY -= m_Seg_Row;
+
+            if (tmpX + fillIdxX >= m_Seg_Col) return false;
+            if (tmpY + fillIdxY >= m_Seg_Row) return false;
+
+            if (m_Statuses[iX + fillIdxX, iY + fillIdxY] == eMapStatus.NotUse) return false;
+
+            return true;
         }
     }
 }

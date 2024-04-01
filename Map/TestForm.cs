@@ -72,35 +72,43 @@ namespace Map
         {
             mapControl1.SetStatusReadyAll();
             numTriNum.Value = 0;
+            numOrder.Value = 0;
             numCurrentCol.Value = 0;
             numCurrentRow.Value = 0;
         }
 
         private void btnSetStatusEach_Click(object sender, EventArgs e)
         {
-            mapControl1.SetStatus((int)numTriNum.Value, true, eMapStatus.Good);
+            if (mapControl1.TotalTriggerCountCol * mapControl1.TotalTriggerCountRow > numTriNum.Value)
+            {
+                mapControl1.SetStatus((int)numTriNum.Value, true, (int)numOrder.Value++, eMapStatus.Good);
+
+                if (numOrder.Value == mapControl1.FillCount_Col * mapControl1.FillCount_Row)
+                {
+                    numOrder.Value = 0;
+                    numTriNum.Value++;
+                }
+            }
         }
 
         private void btnSetStatusTogether_Click(object sender, EventArgs e)
         {
             if (mapControl1.TotalTriggerCountCol * mapControl1.TotalTriggerCountRow > numTriNum.Value)
             {
-                mapControl1.GetTriNumIndex((int)numTriNum.Value++, out int col, out int row);
+                eMapStatus[] statuses = new eMapStatus[(int)numFillX.Value * (int)numFillY.Value];
 
-                if (col < 0 || row < 0) return;
+                for (int i = 0; i < statuses.Length; i++)
+                {
+                    statuses[i] = eMapStatus.Res01;
+                }
 
-                numCurrentCol.Value = col;
-                numCurrentRow.Value = row;
+                mapControl1.SetStatuses((int)numTriNum.Value++, true, out int iX, out int iY, statuses);
+
+                if (iX < 0 || iY < 0) return;
+
+                numCurrentCol.Value = iX;
+                numCurrentRow.Value = iY;
             }
-
-            //eMapStatus[] statuses = new eMapStatus[(int)numFillX.Value * (int)numFillY.Value];
-            //
-            //for (int i = 0; i < statuses.Length; i++)
-            //{
-            //    statuses[i] = eMapStatus.Good;
-            //}
-            //
-            //mapControl1.SetStatuses((int)numTriNum.Value, true, statuses);
         }
     }
 }
