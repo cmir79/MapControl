@@ -37,6 +37,7 @@
             this.btnInverse = new System.Windows.Forms.Button();
             this.btnSelAll = new System.Windows.Forms.Button();
             this.panPara = new System.Windows.Forms.Panel();
+            this.label9 = new System.Windows.Forms.Label();
             this.chkVisTri = new System.Windows.Forms.CheckBox();
             this.chkVisIdx = new System.Windows.Forms.CheckBox();
             this.chkVisLabel = new System.Windows.Forms.CheckBox();
@@ -55,7 +56,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.mapControl1 = new Map.MapControl();
+            this.mapControl = new Map.MapControl();
             this.panButtons.SuspendLayout();
             this.panPara.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numFilRow)).BeginInit();
@@ -179,6 +180,7 @@
             // 
             // panPara
             // 
+            this.panPara.Controls.Add(this.label9);
             this.panPara.Controls.Add(this.chkVisTri);
             this.panPara.Controls.Add(this.chkVisIdx);
             this.panPara.Controls.Add(this.chkVisLabel);
@@ -203,6 +205,19 @@
             this.panPara.Name = "panPara";
             this.panPara.Size = new System.Drawing.Size(200, 450);
             this.panPara.TabIndex = 2;
+            // 
+            // label9
+            // 
+            this.label9.BackColor = System.Drawing.Color.Gray;
+            this.label9.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.label9.ForeColor = System.Drawing.Color.Yellow;
+            this.label9.Location = new System.Drawing.Point(0, 420);
+            this.label9.Margin = new System.Windows.Forms.Padding(0);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(200, 30);
+            this.label9.TabIndex = 5;
+            this.label9.Text = "LEFT CLICK : USE\r\nRIGTH CLICK : NOTUSE\r\n";
+            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // chkVisTri
             // 
@@ -526,70 +541,70 @@
             this.label1.Text = "Strip Info";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // mapControl1
+            // mapControl
             // 
-            this.mapControl1.BackColor = System.Drawing.Color.Black;
-            this.mapControl1.BorderSize = 1;
-            this.mapControl1.CellLineWidth = 1;
-            this.mapControl1.Color_Active = System.Drawing.Color.Blue;
-            this.mapControl1.Color_Border = System.Drawing.Color.Transparent;
-            this.mapControl1.Color_Good = System.Drawing.Color.Lime;
-            this.mapControl1.Color_Header = System.Drawing.Color.White;
-            this.mapControl1.Color_ItemBorder = System.Drawing.Color.Transparent;
-            this.mapControl1.Color_NotUse = System.Drawing.Color.White;
-            this.mapControl1.Color_Ready = System.Drawing.Color.Lime;
-            this.mapControl1.Color_Res01 = System.Drawing.Color.Red;
-            this.mapControl1.Color_Res02 = System.Drawing.Color.Black;
-            this.mapControl1.Color_Res03 = System.Drawing.Color.Yellow;
-            this.mapControl1.Color_Res04 = System.Drawing.Color.Purple;
-            this.mapControl1.Color_Res05 = System.Drawing.Color.Orange;
-            this.mapControl1.Color_Res06 = System.Drawing.Color.Red;
-            this.mapControl1.Color_Res07 = System.Drawing.Color.Black;
-            this.mapControl1.Color_Res08 = System.Drawing.Color.Yellow;
-            this.mapControl1.Color_Res09 = System.Drawing.Color.Purple;
-            this.mapControl1.Color_Res10 = System.Drawing.Color.Orange;
-            this.mapControl1.Color_Res11 = System.Drawing.Color.Red;
-            this.mapControl1.Color_Res12 = System.Drawing.Color.Black;
-            this.mapControl1.Color_Res13 = System.Drawing.Color.Yellow;
-            this.mapControl1.Color_Res14 = System.Drawing.Color.Purple;
-            this.mapControl1.Color_Res15 = System.Drawing.Color.Orange;
-            this.mapControl1.Color_Res16 = System.Drawing.Color.Red;
-            this.mapControl1.Color_Selected = System.Drawing.Color.Red;
-            this.mapControl1.Color_XMark = System.Drawing.Color.DarkGray;
-            this.mapControl1.ColumnHeadLocation = Map.eMapColHeadLocation.None;
-            this.mapControl1.ColumnNumberStartOne = false;
-            this.mapControl1.CulumnTextType = Map.eMapLabelType.Number;
-            this.mapControl1.DistanceItem = 2;
-            this.mapControl1.DistanceSeg = 5;
-            this.mapControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mapControl1.DrawOffset = new System.Windows.Forms.Padding(3);
-            this.mapControl1.FillCount_Col = 2;
-            this.mapControl1.FillCount_Row = 2;
-            this.mapControl1.FillDirection = Map.eMapDirection.RBtoLB_S;
-            this.mapControl1.ItemCount_Col = 10;
-            this.mapControl1.ItemCount_Row = 5;
-            this.mapControl1.Location = new System.Drawing.Point(0, 50);
-            this.mapControl1.Margin = new System.Windows.Forms.Padding(0);
-            this.mapControl1.MouseActiveEnable = true;
-            this.mapControl1.MouseSelectEnable = true;
-            this.mapControl1.Name = "mapControl1";
-            this.mapControl1.RoundRectFact = 0.2F;
-            this.mapControl1.RowHeadLocation = Map.eMapRowHeadLocation.None;
-            this.mapControl1.RowTextType = Map.eMapLabelType.Number;
-            this.mapControl1.SegmentCount_Col = 6;
-            this.mapControl1.SegmentCount_Row = 3;
-            this.mapControl1.Size = new System.Drawing.Size(600, 450);
-            this.mapControl1.TabIndex = 0;
-            this.mapControl1.VisibleIndex = false;
-            this.mapControl1.VisibleLabel = false;
-            this.mapControl1.VisibleTriNum = false;
+            this.mapControl.BackColor = System.Drawing.Color.Black;
+            this.mapControl.BorderSize = 1;
+            this.mapControl.CellLineWidth = 1;
+            this.mapControl.Color_Active = System.Drawing.Color.Blue;
+            this.mapControl.Color_Border = System.Drawing.Color.Transparent;
+            this.mapControl.Color_Good = System.Drawing.Color.Lime;
+            this.mapControl.Color_Header = System.Drawing.Color.White;
+            this.mapControl.Color_ItemBorder = System.Drawing.Color.Transparent;
+            this.mapControl.Color_NotUse = System.Drawing.Color.White;
+            this.mapControl.Color_Ready = System.Drawing.Color.Lime;
+            this.mapControl.Color_Res01 = System.Drawing.Color.Red;
+            this.mapControl.Color_Res02 = System.Drawing.Color.Black;
+            this.mapControl.Color_Res03 = System.Drawing.Color.Yellow;
+            this.mapControl.Color_Res04 = System.Drawing.Color.Purple;
+            this.mapControl.Color_Res05 = System.Drawing.Color.Orange;
+            this.mapControl.Color_Res06 = System.Drawing.Color.Red;
+            this.mapControl.Color_Res07 = System.Drawing.Color.Black;
+            this.mapControl.Color_Res08 = System.Drawing.Color.Yellow;
+            this.mapControl.Color_Res09 = System.Drawing.Color.Purple;
+            this.mapControl.Color_Res10 = System.Drawing.Color.Orange;
+            this.mapControl.Color_Res11 = System.Drawing.Color.Red;
+            this.mapControl.Color_Res12 = System.Drawing.Color.Black;
+            this.mapControl.Color_Res13 = System.Drawing.Color.Yellow;
+            this.mapControl.Color_Res14 = System.Drawing.Color.Purple;
+            this.mapControl.Color_Res15 = System.Drawing.Color.Orange;
+            this.mapControl.Color_Res16 = System.Drawing.Color.Red;
+            this.mapControl.Color_Selected = System.Drawing.Color.Red;
+            this.mapControl.Color_XMark = System.Drawing.Color.DarkGray;
+            this.mapControl.ColumnHeadLocation = Map.eMapColHeadLocation.None;
+            this.mapControl.ColumnNumberStartOne = false;
+            this.mapControl.CulumnTextType = Map.eMapLabelType.Number;
+            this.mapControl.DistanceItem = 1;
+            this.mapControl.DistanceSeg = 2;
+            this.mapControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mapControl.DrawOffset = new System.Windows.Forms.Padding(3);
+            this.mapControl.FillCount_Col = 2;
+            this.mapControl.FillCount_Row = 2;
+            this.mapControl.FillDirection = Map.eMapDirection.RBtoLB_S;
+            this.mapControl.ItemCount_Col = 10;
+            this.mapControl.ItemCount_Row = 5;
+            this.mapControl.Location = new System.Drawing.Point(0, 50);
+            this.mapControl.Margin = new System.Windows.Forms.Padding(0);
+            this.mapControl.MouseActiveEnable = true;
+            this.mapControl.MouseSelectEnable = true;
+            this.mapControl.Name = "mapControl";
+            this.mapControl.RoundRectFact = 0.2F;
+            this.mapControl.RowHeadLocation = Map.eMapRowHeadLocation.None;
+            this.mapControl.RowTextType = Map.eMapLabelType.Number;
+            this.mapControl.SegmentCount_Col = 6;
+            this.mapControl.SegmentCount_Row = 3;
+            this.mapControl.Size = new System.Drawing.Size(600, 450);
+            this.mapControl.TabIndex = 0;
+            this.mapControl.VisibleIndex = false;
+            this.mapControl.VisibleLabel = false;
+            this.mapControl.VisibleTriNum = false;
             // 
             // MapEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Transparent;
-            this.Controls.Add(this.mapControl1);
+            this.Controls.Add(this.mapControl);
             this.Controls.Add(this.panPara);
             this.Controls.Add(this.panButtons);
             this.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
@@ -611,7 +626,7 @@
 
         #endregion
 
-        private MapControl mapControl1;
+        private MapControl mapControl;
         private System.Windows.Forms.Panel panButtons;
         private System.Windows.Forms.Panel panPara;
         private System.Windows.Forms.Label label1;
@@ -639,5 +654,6 @@
         private System.Windows.Forms.Button btnSaveToFile;
         public System.Windows.Forms.Button btnFunc2;
         public System.Windows.Forms.Button btnFunc1;
+        private System.Windows.Forms.Label label9;
     }
 }

@@ -23,66 +23,86 @@ namespace Map
         private MapControl m_TmpMap = new MapControl();
 
         private event EventHandler _OnFunc1Click;
+
         private event EventHandler _OnFunc2Click;
 
         public MapControl GetMapControl
-        { get { return mapControl1; } }
+        { get { return mapControl; } }
 
         public MapEditor(MapControl mapControl)
         {
             InitializeComponent();
 
-            m_TmpMap.AssignFrom(mapControl, true);
-            mapControl1.AssignFrom(mapControl, true);
+            Init(mapControl);
+        }
 
-            SetComboBox();
+        public MapEditor()
+        {
+            InitializeComponent();
+        }
+
+        public void Init(MapControl control)
+        {
+            if (!Initialized)
+            {
+                SetComboBox();
+
+                m_TmpMap.AssignFrom(control, true);
+                m_TmpMap.SetStatusReadyAll();
+
+                mapControl.OnSelected += MapControl1_OnSelected;
+                mapControl.MouseDown += MapControl1_MouseDown;
+                mapControl.MouseUp += MapControl1_MouseUp;
+                mapControl.OnActive += MapControl1_OnActive;
+            }
+
+            Initialized = false;
+
+            mapControl.AssignFrom(control, true);
             ReadMapPara();
 
-            mapControl1.OnSelected += MapControl1_OnSelected;
-            mapControl1.MouseDown += MapControl1_MouseDown;
-            mapControl1.MouseUp += MapControl1_MouseUp;
-            mapControl1.OnActive += MapControl1_OnActive;
+            mapControl.SetStatusReadyAll();
 
             Initialized = true;
         }
 
         public void ReadMapPara()
         {
-            numItemCol.Value = mapControl1.ItemCount_Col;
-            numItemRow.Value = mapControl1.ItemCount_Row;
-            numSegCol.Value = mapControl1.SegmentCount_Col;
-            numSegRow.Value = mapControl1.SegmentCount_Row;
-            numFilCol.Value = mapControl1.FillCount_Col;
-            numFilRow.Value = mapControl1.FillCount_Row;
+            numItemCol.Value = mapControl.ItemCount_Col;
+            numItemRow.Value = mapControl.ItemCount_Row;
+            numSegCol.Value = mapControl.SegmentCount_Col;
+            numSegRow.Value = mapControl.SegmentCount_Row;
+            numFilCol.Value = mapControl.FillCount_Col;
+            numFilRow.Value = mapControl.FillCount_Row;
 
-            chkVisLabel.Checked = mapControl1.VisibleLabel;
-            chkVisIdx.Checked = mapControl1.VisibleIndex;
-            chkVisTri.Checked = mapControl1.VisibleTriNum;
+            cbDirection.SelectedItem = mapControl.FillDirection.ToString();
+
+            chkVisLabel.Checked = mapControl.VisibleLabel;
+            chkVisIdx.Checked = mapControl.VisibleIndex;
+            chkVisTri.Checked = mapControl.VisibleTriNum;
         }
 
         public void SetComboBox()
         {
             for (int i = 0; i < 16; i++)
                 cbDirection.Items.Add(((eMapDirection)i).ToString());
-
-            cbDirection.SelectedItem = mapControl1.FillDirection.ToString();
         }
 
         private void MapControl1_MouseUp(object sender, MouseEventArgs e)
         {
-            mapControl1.MouseActiveEnable = true;
+            mapControl.MouseActiveEnable = true;
 
             if (e.Button == MouseButtons.Left)
             {
                 for (int col = Math.Min(m_StartX, m_EndX); col <= Math.Max(m_StartX, m_EndX); col++)
                     for (int row = Math.Min(m_StartY, m_EndY); row <= Math.Max(m_StartY, m_EndY); row++)
-                        mapControl1.SetStatus(col, row, eMapStatus.Ready);
+                        mapControl.SetStatus(col, row, eMapStatus.Ready);
             }
             else if (e.Button == MouseButtons.Right)
             {
                 for (int col = Math.Min(m_StartX, m_EndX); col <= Math.Max(m_StartX, m_EndX); col++)
                     for (int row = Math.Min(m_StartY, m_EndY); row <= Math.Max(m_StartY, m_EndY); row++)
-                        mapControl1.SetStatus(col, row, eMapStatus.NotUse);
+                        mapControl.SetStatus(col, row, eMapStatus.NotUse);
             }
         }
 
@@ -100,7 +120,7 @@ namespace Map
 
         private void MapControl1_MouseDown(object sender, MouseEventArgs e)
         {
-            mapControl1.MouseActiveEnable = false;
+            mapControl.MouseActiveEnable = false;
         }
 
         private void nummeric_ValueChanged(object sender, EventArgs e)
@@ -112,21 +132,21 @@ namespace Map
             switch (num)
             {
                 case 0:
-                    mapControl1.ItemCount_Col = (int)(sender as NumericUpDown).Value;
+                    mapControl.ItemCount_Col = (int)(sender as NumericUpDown).Value;
                     if (!VisibleSetSegment)
-                        mapControl1.SegmentCount_Col = (int)(sender as NumericUpDown).Value;
+                        mapControl.SegmentCount_Col = (int)(sender as NumericUpDown).Value;
                     break;
 
                 case 1:
-                    mapControl1.ItemCount_Row = (int)(sender as NumericUpDown).Value;
+                    mapControl.ItemCount_Row = (int)(sender as NumericUpDown).Value;
                     if (!VisibleSetSegment)
-                        mapControl1.SegmentCount_Row = (int)(sender as NumericUpDown).Value;
+                        mapControl.SegmentCount_Row = (int)(sender as NumericUpDown).Value;
                     break;
 
-                case 2: mapControl1.SegmentCount_Col = (int)(sender as NumericUpDown).Value; break;
-                case 3: mapControl1.SegmentCount_Row = (int)(sender as NumericUpDown).Value; break;
-                case 4: mapControl1.FillCount_Col = (int)(sender as NumericUpDown).Value; break;
-                case 5: mapControl1.FillCount_Row = (int)(sender as NumericUpDown).Value; break;
+                case 2: mapControl.SegmentCount_Col = (int)(sender as NumericUpDown).Value; break;
+                case 3: mapControl.SegmentCount_Row = (int)(sender as NumericUpDown).Value; break;
+                case 4: mapControl.FillCount_Col = (int)(sender as NumericUpDown).Value; break;
+                case 5: mapControl.FillCount_Row = (int)(sender as NumericUpDown).Value; break;
             }
 
             ReadMapPara();
@@ -140,39 +160,40 @@ namespace Map
 
             switch (num)
             {
-                case 0: mapControl1.VisibleLabel = (sender as CheckBox).Checked; break;
-                case 1: mapControl1.VisibleIndex = (sender as CheckBox).Checked; break;
-                case 2: mapControl1.VisibleTriNum = (sender as CheckBox).Checked; break;
+                case 0: mapControl.VisibleLabel = (sender as CheckBox).Checked; break;
+                case 1: mapControl.VisibleIndex = (sender as CheckBox).Checked; break;
+                case 2: mapControl.VisibleTriNum = (sender as CheckBox).Checked; break;
             }
         }
 
         private void comboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            mapControl1.FillDirection = (eMapDirection)cbDirection.SelectedIndex;
+            mapControl.FillDirection = (eMapDirection)cbDirection.SelectedIndex;
         }
 
         private void btnSelAll_Click(object sender, EventArgs e)
         {
-            mapControl1.SetStatusReadyAll(true);
+            mapControl.SetStatusReadyAll(true);
         }
 
         private void btnInverse_Click(object sender, EventArgs e)
         {
-            for (int col = 0; col < mapControl1.ItemCount_Col; col++)
-                for (int row = 0; row < mapControl1.ItemCount_Row; row++)
+            for (int col = 0; col < mapControl.ItemCount_Col; col++)
+                for (int row = 0; row < mapControl.ItemCount_Row; row++)
                 {
-                    if (mapControl1.GetStatus(col, row) != eMapStatus.NotUse)
-                        mapControl1.SetStatus(col, row, eMapStatus.NotUse);
+                    if (mapControl.GetStatus(col, row) != eMapStatus.NotUse)
+                        mapControl.SetStatus(col, row, eMapStatus.NotUse);
                     else
-                        mapControl1.SetStatus(col, row, eMapStatus.Ready);
+                        mapControl.SetStatus(col, row, eMapStatus.Ready);
                 }
 
-            mapControl1.Invalidate();
+            mapControl.Invalidate();
         }
 
         private void btnLoadMap_Click(object sender, EventArgs e)
         {
-            mapControl1.AssignFrom(m_TmpMap, true);
+            mapControl.AssignFrom(m_TmpMap, true);
+            ReadMapPara();
 
             VisibleSetSegment = VisibleSetSegment;
             VisibleSetFill = VisibleSetFill;
@@ -203,8 +224,8 @@ namespace Map
             {
                 if (!value)
                 {
-                    mapControl1.SegmentCount_Col = mapControl1.ItemCount_Col;
-                    mapControl1.SegmentCount_Row = mapControl1.ItemCount_Row;
+                    mapControl.SegmentCount_Col = mapControl.ItemCount_Col;
+                    mapControl.SegmentCount_Row = mapControl.ItemCount_Row;
                 }
                 numSegCol.Visible = value;
                 numSegRow.Visible = value;
@@ -220,8 +241,8 @@ namespace Map
             {
                 if (!value)
                 {
-                    mapControl1.FillCount_Col = 1;
-                    mapControl1.FillCount_Row = 1;
+                    mapControl.FillCount_Col = 1;
+                    mapControl.FillCount_Row = 1;
                 }
                 numFilCol.Visible = value;
                 numFilRow.Visible = value;
@@ -240,6 +261,18 @@ namespace Map
         {
             get { return btnFunc2.Visible; }
             set { btnFunc2.Visible = value; }
+        }
+
+        public string Func1ButtonText
+        {
+            get { return btnFunc1.Text; }
+            set { btnFunc1.Text = value; }
+        }
+
+        public string Func2ButtonText
+        {
+            get { return btnFunc2.Text; }
+            set { btnFunc2.Text = value; }
         }
 
         public event EventHandler OnFunc1Click

@@ -3,7 +3,6 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Map
 {
@@ -107,6 +106,8 @@ namespace Map
         private MapEventHandler _OnSelected;
         private MapEventHandler _OnActive;
 
+        private EventHandler _OnSetAll;
+
         #endregion Event
 
         #endregion Member
@@ -151,9 +152,9 @@ namespace Map
             DoubleBuffered = true;
         }
 
-        public MapControl(MapControl Source)
+        public MapControl(MapControl Source, bool bOnlyStatus = false)
         {
-            AssignFrom(Source);
+            AssignFrom(Source, bOnlyStatus);
         }
 
         public void AssignTo(MapControl Dest, bool bOnlyStatus = false)
@@ -779,25 +780,32 @@ namespace Map
                     {
                         RectangleF tmpRect = new RectangleF();
 
-                        tmpRect.X = m_ItemRects[col, row].X + 1;
-                        tmpRect.Y = m_ItemRects[col, row].Y + 1;
-                        tmpRect.Width = m_ItemRects[col, row].Width - 2;
-                        tmpRect.Height = m_ItemRects[col, row].Height - 2;
+                        tmpRect.X = m_ItemRects[col, row].X + 0.5f;
+                        tmpRect.Y = m_ItemRects[col, row].Y + 0.5f;
+                        tmpRect.Width = m_ItemRects[col, row].Width - 1;
+                        tmpRect.Height = m_ItemRects[col, row].Height - 1;
 
-                        GetRoundedRectPath(ref path, tmpRect, m_RoundRectFact);
-                        gra.DrawPath(new Pen(m_Clr_Selected, 1), path);
+                        if (tmpRect.Width > 0 && tmpRect.Height > 0)
+                        {
+                            GetRoundedRectPath(ref path, tmpRect, m_RoundRectFact);
+                            gra.DrawPath(new Pen(m_Clr_Selected, 1), path);
+                        }
                     }
 
                     if (m_ActiveEnable && col == m_Active_Col && row == m_Active_Row)
                     {
                         RectangleF tmpRect = new RectangleF();
 
-                        tmpRect.X = m_ItemRects[col, row].X + 2;
-                        tmpRect.Y = m_ItemRects[col, row].Y + 2;
-                        tmpRect.Width = m_ItemRects[col, row].Width - 4;
-                        tmpRect.Height = m_ItemRects[col, row].Height - 4;
-                        GetRoundedRectPath(ref path, tmpRect, m_RoundRectFact);
-                        gra.DrawPath(new Pen(m_Clr_Active, 1), path);
+                        tmpRect.X = m_ItemRects[col, row].X + 1f;
+                        tmpRect.Y = m_ItemRects[col, row].Y + 1f;
+                        tmpRect.Width = m_ItemRects[col, row].Width - 2;
+                        tmpRect.Height = m_ItemRects[col, row].Height - 2;
+
+                        if (tmpRect.Width > 0 && tmpRect.Height > 0)
+                        {
+                            GetRoundedRectPath(ref path, tmpRect, m_RoundRectFact);
+                            gra.DrawPath(new Pen(m_Clr_Active, 1), path);
+                        }
                     }
                 }
             }
@@ -1466,6 +1474,9 @@ namespace Map
         public int TotalTriggerCountRow
         { get { return m_TotalTriCntRow; } }
 
+        public int TotalTriggerCount
+        { get { return m_TotalTriCntCol * m_TotalTriCntRow; } }
+
         public bool MouseActiveEnable
         {
             get { return m_ActiveEnable; }
@@ -1511,6 +1522,21 @@ namespace Map
             }
         }
 
+        public event EventHandler OnSetAll
+        {
+            add
+            {
+                if (_OnSetAll == null) _OnSetAll += value;
+                else
+                    lock (_OnSetAll) _OnSetAll += value;
+            }
+            remove
+            {
+                if (_OnSetAll == null) return;
+                else lock (_OnSetAll) _OnSetAll -= value;
+            }
+        }
+
         #endregion Event Handler
 
         /// <summary>
@@ -1523,6 +1549,8 @@ namespace Map
                 for (int row = 0; row < m_Statuses.GetLength(1); row++)
                     if (m_Statuses[col, row] != eMapStatus.NotUse || includeNotUse)
                         m_Statuses[col, row] = eMapStatus.Ready;
+
+            _OnSetAll?.Invoke(this, null);
 
             Invalidate();
         }
@@ -1567,8 +1595,8 @@ namespace Map
         /// <param name="iX">처음 X인덱스</param>
         /// <param name="iY">처음 Y인덱스</param>
         /// <param name="status">결과</param>
-        /// <param name="fillIdx">순서는 Direction과 동일하여야 함</param>
-        public void SetStatus(int triNum, int iX, int iY, eMapStatus status, int fillIdx = 0)
+        /// <param name="fillOrder">순서는 Direction과 동일하여야 함</param>
+        public void SetStatus(int triNum, int iX, int iY, eMapStatus status, int fillOrder = 0)
         {
             if (iX < 0 || iY < 0) return;
 
@@ -1581,7 +1609,7 @@ namespace Map
                     if (((int)m_FillDirection & 0b1000) == 0b1000 && col % 2 != 0)
                         for (int row = m_Fil_Row - 1; row >= 0; row--)
                         {
-                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            if (fillOrder == tmpCnt && CheckWritableResult(iX, iY, col, row))
                             {
                                 m_Statuses[iX + col, iY + row] = status;
                                 m_ItemTriNums[iX + col, iY + row] = triNum;
@@ -1595,7 +1623,7 @@ namespace Map
                     else
                         for (int row = 0; row < m_Fil_Row; row++)
                         {
-                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            if (fillOrder == tmpCnt && CheckWritableResult(iX, iY, col, row))
                             {
                                 m_Statuses[iX + col, iY + row] = status;
                                 m_ItemTriNums[iX + col, iY + row] = triNum;
@@ -1615,7 +1643,7 @@ namespace Map
                     if (((int)m_FillDirection & 0b1000) == 0b1000 && row % 2 != 0)
                         for (int col = m_Fil_Col - 1; col >= 0; col--)
                         {
-                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            if (fillOrder == tmpCnt && CheckWritableResult(iX, iY, col, row))
                             {
                                 m_Statuses[iX + col, iY + row] = status;
                                 m_ItemTriNums[iX + col, iY + row] = triNum;
@@ -1629,7 +1657,7 @@ namespace Map
                     else
                         for (int col = 0; col < m_Fil_Col; col++)
                         {
-                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            if (fillOrder == tmpCnt && CheckWritableResult(iX, iY, col, row))
                             {
                                 m_Statuses[iX + col, iY + row] = status;
                                 m_ItemTriNums[iX + col, iY + row] = triNum;
@@ -1650,12 +1678,12 @@ namespace Map
         /// <param name="triNum">트리거 번호 0 ~</param>
         /// <param name="skipNotUse">트리거넘버에 해당하는 위치가 전부 Not Use면 자동으로 다음 TriNum에 결과 삽입</param>
         /// <param name="status">결과</param>
-        /// <param name="fillIdx">순서는 Direction과 동일하여야 함</param>
-        public void SetStatus(int triNum, bool skipNotUse, eMapStatus status, int fillIdx = 0)
+        /// <param name="fillOrder">순서는 Direction과 동일하여야 함</param>
+        public void SetStatus(int triNum, bool skipNotUse, eMapStatus status, int fillOrder = 0)
         {
             GetIndex(skipNotUse ? GetVirTriNum(triNum) : triNum, out int iX, out int iY);
 
-            SetStatus(triNum, iX, iY, status, fillIdx);
+            SetStatus(triNum, iX, iY, status, fillOrder);
         }
 
         /// <summary>
@@ -1666,15 +1694,15 @@ namespace Map
         /// <param name="status">결과</param>
         /// <param name="iX">입력 트리거에서 결과 입력하는 처음 X인덱스</param>
         /// <param name="iY">입력 트리거에서 결과 입력하는 처음 Y인덱스</param>
-        /// <param name="fillIdx">순서는 Direction과 동일하여야 함</param>
-        public void SetStatus(int triNum, bool skipNotUse, out int iX, out int iY, eMapStatus status, int fillIdx = 0)
+        /// <param name="fillOrder">순서는 Direction과 동일하여야 함</param>
+        public void SetStatus(int triNum, bool skipNotUse, out int iX, out int iY, eMapStatus status, int fillOrder = 0)
         {
             GetIndex(skipNotUse ? GetVirTriNum(triNum) : triNum, out iX, out iY);
 
-            SetStatus(triNum, iX, iY, status, fillIdx);
+            SetStatus(triNum, iX, iY, status, fillOrder);
         }
 
-        public eMapStatus GetStatus(int iX, int iY, int fillIdx)
+        public eMapStatus GetStatus(int iX, int iY, int fillOrder)
         {
             int tmpCnt = 0;
 
@@ -1685,7 +1713,7 @@ namespace Map
                     if (((int)m_FillDirection & 0b1000) == 0b1000 && col % 2 != 0)
                         for (int row = m_Fil_Row - 1; row >= 0; row--)
                         {
-                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            if (fillOrder == tmpCnt && CheckWritableResult(iX, iY, col, row))
                                 return m_Statuses[iX + col, iY + row];
 
                             tmpCnt++;
@@ -1693,7 +1721,7 @@ namespace Map
                     else
                         for (int row = 0; row < m_Fil_Row; row++)
                         {
-                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            if (fillOrder == tmpCnt && CheckWritableResult(iX, iY, col, row))
                                 return m_Statuses[iX + col, iY + row];
 
                             tmpCnt++;
@@ -1707,7 +1735,7 @@ namespace Map
                     if (((int)m_FillDirection & 0b1000) == 0b1000 && row % 2 != 0)
                         for (int col = m_Fil_Col - 1; col >= 0; col--)
                         {
-                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            if (fillOrder == tmpCnt && CheckWritableResult(iX, iY, col, row))
                                 return m_Statuses[iX + col, iY + row];
 
                             tmpCnt++;
@@ -1715,7 +1743,7 @@ namespace Map
                     else
                         for (int col = 0; col < m_Fil_Col; col++)
                         {
-                            if (fillIdx == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            if (fillOrder == tmpCnt && CheckWritableResult(iX, iY, col, row))
                                 return m_Statuses[iX + col, iY + row];
 
                             tmpCnt++;
@@ -1779,6 +1807,35 @@ namespace Map
             return ret;
         }
 
+        public int GetTotalVirTriNum()
+        {
+            int nFind = 0;
+
+            for (int i = 0; i < TotalTriggerCount; i++)
+            {
+                GetIndex(i, out int iX, out int iY);
+
+                for (int col = 0; col < m_Fil_Col; col++)
+                {
+                    bool bFindUsed = false;
+
+                    for (int row = 0; row < m_Fil_Row; row++)
+                    {
+                        if (CheckWritableResult(iX, iY, col, row))
+                        {
+                            nFind++;
+                            bFindUsed = true;
+                            break;
+                        }
+                    }
+
+                    if (bFindUsed) break;
+                }
+            }
+
+            return nFind;
+        }
+
         /// <summary>
         /// 결과 입력 시작 인덱스
         /// </summary>
@@ -1809,6 +1866,84 @@ namespace Map
                 iX = tmpNum % m_TotalTriCntCol * m_Fil_Col - (m_Seg_Col % m_Fil_Col != 0 ? tmpNum % m_TotalTriCntCol / m_TriCntPerSegCol * (m_Fil_Col - m_Seg_Col % m_Fil_Col) : 0);
                 iY = triNum / m_TotalTriCntCol * m_Fil_Row - (m_Seg_Row % m_Fil_Row != 0 ? triNum / m_TotalTriCntCol / m_TriCntPerSegRow * (m_Fil_Row - m_Seg_Row % m_Fil_Row) : 0);
             }
+        }
+
+        public bool GetFillableAndIndex(int triNum, bool skipNotUse, int fillOrder, out int ix, out int iy)
+        {
+            ix = -1; iy = -1;
+
+            GetIndex(skipNotUse ? GetVirTriNum(triNum) : triNum, out int iX, out int iY);
+
+            if (iX < 0 || iY < 0) return false;
+
+            int tmpCnt = 0;
+
+            if (((int)m_FillDirection & 0b0100) == 0b0100)
+            {
+                for (int col = 0; col < m_Fil_Col; col++)
+                {
+                    if (((int)m_FillDirection & 0b1000) == 0b1000 && col % 2 != 0)
+                        for (int row = m_Fil_Row - 1; row >= 0; row--)
+                        {
+                            if (fillOrder == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            {
+                                ix = col;
+                                iy = row;
+                                return true;
+                            }
+
+                            tmpCnt++;
+                        }
+                    else
+                        for (int row = 0; row < m_Fil_Row; row++)
+                        {
+                            if (fillOrder == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            {
+                                ix = col;
+                                iy = row;
+                                return true;
+                            }
+
+                            tmpCnt++;
+                        }
+
+                    if (fillOrder < tmpCnt) return false;
+                }
+            }
+            else
+            {
+                for (int row = 0; row < m_Fil_Row; row++)
+                {
+                    if (((int)m_FillDirection & 0b1000) == 0b1000 && row % 2 != 0)
+                        for (int col = m_Fil_Col - 1; col >= 0; col--)
+                        {
+                            if (fillOrder == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            {
+                                ix = col;
+                                iy = row;
+                                return true;
+                            }
+
+                            tmpCnt++;
+                        }
+                    else
+                        for (int col = 0; col < m_Fil_Col; col++)
+                        {
+                            if (fillOrder == tmpCnt && CheckWritableResult(iX, iY, col, row))
+                            {
+                                ix = col;
+                                iy = row;
+                                return true;
+                            }
+
+                            tmpCnt++;
+                        }
+
+                    if (fillOrder < tmpCnt) return false;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
